@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8f1">
+  <meta name="description" content="Jogo investigativo de Geometria: descubra como a área de uma horta muda quando o perímetro permanece fixo.">
+  <title>Missão Horta 2.0 | Laboratório Geométrico</title>
+  <style>
+    :root {
+      --ink: #18342c;
+      --muted: #65766d;
+      --green: #167957;
+      --deep: #104f3f;
+      --cream: #f4f7f2;
+      --paper: #ffffff;
+      --border: #dce5db;
+      --lgreen: #e9f4e9;
+      --orange: #f3ae67;
+      --blue: #d8ebf1;
+      --shadow: 0 14px 46px rgba(32, 57, 43, .07);
+      --radius: 22px;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--cream); color: var(--ink); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #dba35e; outline-offset: 3px; }
+    .hidden, [hidden] { display: none !important; }
+    .app-shell { width: min(1160px, calc(100% - 36px)); margin: 0 auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 24px 0 19px; }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .brandmark { width: 46px; height: 46px; border-radius: 15px; background: var(--deep); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .brandmark svg { width: 27px; height: 27px; }
+    .brand-title { font-weight: 850; font-size: 18px; letter-spacing: -.045em; line-height: 1.2; }
+    .brand-subtitle { color: var(--muted); font-size: 11px; line-height: 1.3; letter-spacing: .05em; text-transform: uppercase; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid transparent; min-height: 48px; padding: 11px 19px; border-radius: 14px; font-weight: 750; text-align: center; transition: background .15s ease, transform .12s ease; }
+    .button:active:not(:disabled) { transform: translateY(1px); }
+    .button.primary { color: white; background: var(--green); }
+    .button.primary:hover:not(:disabled) { background: #136849; }
+    .button.dark { color: white; background: var(--deep); }
+    .button.secondary { color: var(--ink); border-color: var(--border); background: white; }
+    .button.secondary:hover:not(:disabled) { background: #f2f8f0; }
+    .button.ghost { color: var(--muted); border-color: transparent; background: transparent; }
+    .button.small { min-height: 38px; padding: 7px 12px; border-radius: 10px; font-size: 13px; }
+    .button.iconbtn { min-width: 44px; padding: 8px; font-size: 21px; }
+    .pill { display: inline-flex; align-items: center; width: fit-content; border-radius: 100px; padding: 7px 12px; background: #e6f1e7; color: #236d50; font-size: 11px; text-transform: uppercase; letter-spacing: .10em; font-weight: 850; }
+    .stepper { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 20px; }
+    .step { color: var(--muted); font-weight: 750; border: 1px solid var(--border); background: rgba(255,255,255,.64); min-height: 45px; border-radius: 12px; padding: 9px 5px; font-size: 12px; }
+    .step.is-active { background: var(--deep); color: white; border-color: var(--deep); }
+    .step .step-n { display: inline-flex; align-items: center; justify-content: center; width: 21px; height: 21px; border-radius: 50%; background: rgba(29, 80, 58,.1); margin-right: 5px; font-size: 11px; }
+    .step.is-active .step-n { background: rgba(255,255,255,.2); }
+    .screen { padding-bottom: 55px; animation: arrive .18s ease-out; }
+    @keyframes arrive { from { opacity: .68; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    .card { background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .intro-hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 20px; align-items: stretch; }
+    .intro-copy { padding: clamp(22px, 3.4vw, 42px); }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: clamp(34px, 4.9vw, 62px); line-height: 1.07; margin: 16px 0 18px; letter-spacing: -.065em; }
+    h2 { font-size: clamp(26px, 3.3vw, 40px); line-height: 1.12; letter-spacing: -.055em; margin: 9px 0 11px; }
+    h3 { letter-spacing: -.03em; font-size: 19px; margin-bottom: 7px; }
+    .lede { color: #52675b; font-size: clamp(15px, 1.8vw, 17px); max-width: 57ch; }
+    .intro-art { overflow: hidden; position: relative; display: flex; min-height: 360px; background: radial-gradient(circle at 65% 20%, #e4f1da 0, #cee5d4 44%, #b5d6c9 100%); align-items: center; justify-content: center; }
+    .intro-art svg { width: 90%; max-width: 420px; filter: drop-shadow(0px 10px 5px rgba(39, 87, 50, .08)); }
+    .metric-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 25px 0; }
+    .metric { padding: 11px 15px; border: 1px solid #dfebde; border-radius: 13px; background: #f5faf4; min-width: 115px; }
+    .metric strong { font-size: 21px; display: block; letter-spacing: -.04em; }
+    .metric span { font-size: 12px; color: var(--muted); }
+    .prediction { margin-top: 20px; }
+    .question { font-weight: 850; font-size: 16px; margin-bottom: 9px; }
+    .hint { font-size: 13px; color: var(--muted); }
+    .option-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 13px 0 19px; }
+    .prediction-choice { position: relative; }
+    .prediction-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .prediction-choice label { display: flex; align-items: center; min-height: 54px; padding: 12px 14px; background: white; border: 1.5px solid var(--border); border-radius: 13px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .prediction-choice input:checked + label { background: #e5f5e8; border-color: var(--green); color: var(--deep); }
+    .prediction-choice input:focus-visible + label { outline: 3px solid #dba35e; outline-offset: 2px; }
+    .intro-footer { padding: 18px 4px; text-align: center; color: var(--muted); font-size: 12px; }
+    .screen-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 4px 0 18px; }
+    .screen-head p { margin-bottom: 0; color: var(--muted); max-width: 65ch; }
+    .lab-grid { display: grid; grid-template-columns: minmax(0, 1.23fr) minmax(295px, .77fr); gap: 16px; align-items: start; }
+    .lab-left { padding: 24px; }
+    .lab-right { padding: 24px; }
+    .tagbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .tag { border: 1px solid #cbe3d3; background: #eff8f0; color: #23694e; border-radius: 9px; font-size: 12px; padding: 5px 9px; font-weight: 750; }
+    .tag.blue { background: #edf4f9; border-color: #d2e6ef; color: #42768e; }
+    .canvas-shell { position: relative; overflow: hidden; border-radius: 17px; border: 1px solid #d8e6db; background-color: #f4f9f1; background-image: linear-gradient(to right, rgba(29, 108, 58, .05) 1px, transparent 1px), linear-gradient(to bottom, rgba(29, 108, 58, .05) 1px, transparent 1px); background-size: 23px 23px; }
+    .canvas-shell svg { width: 100%; height: auto; display: block; }
+    .control-panel { margin-top: 18px; }
+    .slider-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; }
+    output { font-weight: 900; font-size: 19px; white-space: nowrap; }
+    .slider-row { display: flex; gap: 10px; align-items: center; margin: 9px 0; }
+    input[type=range] { width: 100%; accent-color: var(--green); height: 28px; cursor: pointer; }
+    .control-limits { display: flex; justify-content: space-between; margin: 0 48px; color: var(--muted); font-size: 11px; }
+    .readings { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; margin-top: 16px; }
+    .readout { background: #f6faf6; border: 1px solid #e1ebe1; border-radius: 14px; padding: 13px 12px; }
+    .readout span { font-size: 11px; color: var(--muted); display: block; }
+    .readout strong { font-size: 19px; letter-spacing: -.03em; white-space: nowrap; }
+    .readout.area { background: #e8f4ec; border-color: #cde4d3; }
+    .action-row { display: flex; gap: 9px; margin-top: 16px; flex-wrap: wrap; }
+    .lab-note { color: var(--muted); font-size: 12px; margin: 13px 0 0; }
+    .guess-panel { margin-top: 17px; padding: 15px; background: #f3f8f5; border: 1px solid #d6e8db; border-radius: 14px; }
+    .guess-panel .field-label { margin-bottom: 9px; }
+    .guess-row { display: flex; align-items: stretch; gap: 8px; }
+    .guess-row input { flex: 1; min-width: 0; width: 100%; min-height: 47px; border: 1.5px solid #b9d5c2; background: white; border-radius: 11px; padding: 10px 13px; color: var(--ink); font-size: 18px; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .guess-unit { display: flex; align-items: center; justify-content: center; font-weight: 850; font-size: 15px; border-radius: 11px; padding: 0 13px; background: #e2f0e6; color: var(--deep); }
+    .guess-feedback { margin-top: 17px; border: 1px solid #bad9c9; border-radius: 14px; padding: 13px 15px; background: #eef7ef; }
+    .guess-feedback strong { display: block; margin-bottom: 5px; color: var(--deep); font-size: 14px; }
+    .guess-feedback p { margin: 0; color: #3f6553; font-size: 13px; }
+    .guess-feedback.error { background: #fff5ef; border-color: #edcdbd; }
+    .guess-feedback.error strong { color: #9b472c; }
+    .guess-feedback.error p { color: #794b39; }
+    .guess-row input[aria-invalid="true"] { border-color: #c46b4b; }
+    .mini-progress { margin: 12px 0 15px; }
+    .progress-track { width: 100%; height: 9px; background: #e8eee9; border-radius: 100px; overflow: hidden; }
+    .progress-fill { background: var(--green); width: 0; height: 100%; border-radius: inherit; transition: width .2s; }
+    .progress-caption { font-size: 12px; color: var(--muted); margin: 7px 0 0; }
+    .evidence-list { display: grid; gap: 8px; margin: 12px 0; }
+    .empty { border: 1px dashed #cadbd0; background: #f8faf6; color: var(--muted); padding: 25px 13px; border-radius: 13px; font-size: 13px; text-align: center; }
+    .evidence { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 10px 11px; background: #f8fbf8; border: 1px solid #e2eae2; border-radius: 12px; }
+    .evidence .num { font-size: 11px; font-weight: 850; color: var(--green); background: #dfeee3; border-radius: 8px; min-width: 25px; text-align: center; padding: 5px; }
+    .evidence strong { font-size: 13px; }
+    .evidence span { display: block; color: var(--muted); font-size: 12px; }
+    .evidence button { background: none; border: none; color: #9a6d66; font-size: 21px; width: 36px; height: 36px; }
+    .challenge { background: #fff6e9; border: 1px solid #f2dec3; padding: 14px; border-radius: 14px; margin: 16px 0; }
+    .challenge strong { color: #8b552e; font-size: 13px; }
+    .challenge p { color: #8b6b4a; margin: 5px 0 0; font-size: 13px; }
+    .panel-footer { margin-top: 15px; }
+    .panel-footer .button { width: 100%; }
+    .checkpoint { padding: 20px 25px; margin: 14px 0; background: #f1f8f3; border-left: 4px solid var(--green); border-radius: 14px; }
+    .checkpoint p { margin: 6px 0 0; color: #476b59; }
+    .debate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; }
+    .pane { padding: 25px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th { text-align: left; color: var(--muted); font-size: 12px; border-bottom: 1px solid var(--border); padding: 9px 7px; }
+    .data-table td { padding: 12px 7px; border-bottom: 1px solid #edf2ec; }
+    .data-table td:last-child, .data-table th:last-child { text-align: right; }
+    textarea { background: #fbfdfb; width: 100%; padding: 12px 13px; min-height: 105px; resize: vertical; border: 1.5px solid #d7e4d8; border-radius: 12px; color: var(--ink); font-size: 14px; }
+    select { background: white; border: 1px solid var(--border); border-radius: 11px; font: inherit; color: var(--ink); width: 100%; min-height: 45px; padding: 9px 12px; }
+    label.field-label { display: block; font-weight: 750; font-size: 14px; margin-bottom: 8px; }
+    .field { margin: 15px 0; }
+    .tip-list { margin: 15px 0; padding-left: 20px; color: #536b5e; }
+    .tip-list li { padding-bottom: 7px; }
+    .formal-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); gap: 17px; align-items: start; }
+    .formula-stage { padding: 25px; }
+    .form-step { margin: 18px 0; border: 1px solid #e1eae1; background: #fafcf9; border-radius: 15px; padding: 15px; }
+    .form-step.locked { opacity: .5; filter: grayscale(.3); }
+    .form-step .eq { padding: 12px 14px; background: #e8f4ed; border-radius: 10px; font-size: clamp(18px, 2.4vw, 24px); letter-spacing: -.02em; font-weight: 850; color: var(--deep); margin: 10px 0; font-variant-numeric: tabular-nums; }
+    .form-step p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .form-step .question { font-size: 14px; }
+    .graph-card { padding: 25px; }
+    .graph-wrap { border: 1px solid var(--border); border-radius: 13px; background: #f9fcf9; padding: 8px; min-height: 250px; display: flex; align-items: center; }
+    .graph-wrap svg { display: block; width: 100%; }
+    .graph-lock { padding: 65px 10px; text-align: center; color: var(--muted); font-size: 14px; }
+    .teacher-card { background: #ecf4e9; border: 1px solid #d1e4cf; border-radius: 16px; padding: 17px; margin: 17px 0; }
+    .teacher-card strong { font-size: 14px; }
+    .teacher-card p { font-size: 13px; color: #527159; margin: 6px 0 0; }
+    .exit-panel { margin: 16px 0; padding: 20px; border-radius: 16px; background: #f6f8f1; border: 1px solid var(--border); }
+    .footer-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 20px; }
+    .toast { position: fixed; bottom: 18px; left: 50%; transform: translate(-50%, 18px); max-width: min(92vw, 420px); text-align: center; padding: 12px 18px; border-radius: 12px; color: white; background: var(--deep); box-shadow: 0 12px 22px rgba(0,0,0,.17); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; font-size: 13px; font-weight: 700; z-index: 60; }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+    /* v2 — laboratório para computador e celular */
+    .mode-stamp { display:flex; gap:8px; align-items:center; font-size:12px; font-weight:800; color:#28634c; background:#e6f2e8; border:1px solid #cee4d2; border-radius:99px; padding:8px 12px; }
+    .mode-stamp:before { content:""; width:7px;height:7px;border-radius:50%;background:#209268;box-shadow:0 0 0 4px #c8e9d3; }
+    .step-time { display:block; font-size:10px; opacity:.75; font-weight:500; }
+    .step.is-active .step-time { opacity:.8; }
+    .lab-grid { grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr); }
+    .lab-left { background:linear-gradient(180deg,#ffffff,#fbfdfb); }
+    .canvas-shell { background-color:#f5f8ef; background-image:none; }
+    .canvas-shell svg { touch-action:none; }
+    .drag-handle { cursor:ew-resize; touch-action:none; transition:fill .15s; }
+    .drag-handle:hover { fill:#f5bb68; }
+    .visual-instruction { background:#eaf4e8; border:1px solid #d3e7d1; border-radius:12px; padding:10px 12px; margin:10px 0 0; color:#42614f; font-size:13px; }
+    .lab-dashboard { margin-top:17px; display:grid; grid-template-columns: 1fr 315px; gap:17px; align-items:stretch; }
+    .plot-panel, .missions-panel { padding:24px; }
+    .plot-panel h3,.missions-panel h3 { margin-bottom:5px; }
+    .plot-panel p,.missions-panel p { color:var(--muted); font-size:13px; }
+    .plot-svg-shell { border:1px solid #e4eae3; background:#fbfdfa; padding:10px; border-radius:16px; }
+    .plot-svg-shell svg { display:block; width:100%; max-height:270px; }
+    .mission-card { padding:12px; border:1px solid #deebdf; background:#f8fbf8; border-radius:12px; margin:9px 0; }
+    .mission-card strong { display:block; font-size:13px; color:var(--deep); }
+    .mission-card span { display:block; color:#536a5c; font-size:12px; margin-top:3px; }
+    .hold-callout { border-radius:18px; padding:21px; background:#184c3d; color:white; margin: 0 0 16px; box-shadow:0 15px 30px rgba(17,67,51,.13); }
+    .hold-callout strong { font-size:18px; display:block; }
+    .hold-callout p { margin:5px 0 0; color:#cfe4d7; font-size:14px; }
+    .hold-callout .hold-kicker { display:inline-block; font-weight:800; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#d3e5b6; margin-bottom:5px; }
+    .teacher-check { margin:16px 0; border:1px solid #d6e7d8; border-radius:13px; background:#f3f9f3; padding:14px 16px; display:flex;align-items:flex-start;gap:12px;cursor:pointer; }
+    .teacher-check input { width:20px;height:20px;flex:0 0 20px; margin-top:2px;accent-color:var(--green); }
+    .teacher-check span { font-size:14px; color:#335844; }
+    .two-comparisons { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0; }
+    .comparison-item { border:1px solid #dce8db; background:#f9fbf8; border-radius:14px; padding:11px; text-align:center; }
+    .comparison-item svg { width:100%; display:block; max-height:135px; }
+    .comparison-item p { margin:5px 0 0; font-size:12px; }
+    .smallcaps { font-size:11px; letter-spacing:.08em; text-transform:uppercase; font-weight:850; color:#45745b; }
+    .name-field { margin:0 0 16px; max-width:360px; }
+    .name-field input { border:1px solid #d1dfd4; border-radius:11px; padding:12px; width:100%; background:#fff; color:var(--ink); }
+    .bottom-note { color: var(--muted); text-align: center; font-size: 11px; padding: 4px 15px 20px; }
+    .restart-link { display: block; margin: 9px auto 0; padding: 5px 9px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); text-decoration: underline; font-size: 11px; }
+    .nowrap { white-space: nowrap; }
+    @media (max-width: 900px) {
+      .lab-grid,.lab-dashboard { grid-template-columns:1fr; }
+    }
+    @media (max-width: 820px) {
+      .intro-hero, .lab-grid, .debate-grid, .formal-wrap { grid-template-columns: 1fr; }
+      .intro-art { min-height: 225px; }
+      .intro-art svg { width: min(70%,380px); }
+      .lab-right { order: 2; }
+      .screen-head { align-items: start; }
+    }
+    @media (max-width: 540px) {
+      .app-shell { width: min(100% - 22px, 500px); }
+      .topbar { padding: 12px 0; }
+      .mode-stamp { font-size:0; padding:8px; gap:0; }
+      .mode-stamp:before { width:8px;height:8px; }
+      .step-time { font-size:9px; }
+      .plot-panel,.missions-panel { padding:18px; }
+      .two-comparisons { gap:7px; }
+      .comparison-item { padding:7px; }
+      .brandmark { width: 39px; height: 39px; border-radius: 12px; }
+      .brand-title { font-size: 16px; }
+      .brand-subtitle { font-size: 10px; }
+      .stepper { gap: 4px; margin-bottom: 12px; }
+      .step { font-size: 10px; min-height: 43px; padding: 7px 2px; }
+      .step .step-n { display: none; }
+      .intro-hero { gap: 10px; }
+      .intro-copy, .lab-left, .lab-right, .pane, .formula-stage, .graph-card { padding: 19px; }
+      .intro-art { min-height: 185px; }
+      .intro-art svg { width: 68%; }
+      h1 { font-size: 36px; }
+      h2 { font-size: 27px; }
+      .lede { font-size: 14px; }
+      .metric-row { margin: 13px 0; }
+      .metric { padding: 8px 12px; }
+      .metric strong { font-size: 18px; }
+      .screen-head { display: block; }
+      .screen-head .pill { margin-top: 10px; }
+      .readings { gap: 6px; }
+      .readout { padding: 10px 7px; }
+      .readout strong { font-size: 16px; }
+      .readout span { font-size: 10px; }
+      .action-row .button { flex: 1; }
+      .button { min-height: 46px; padding: 10px 13px; }
+      .data-table { font-size: 12px; }
+      .data-table td { padding: 9px 3px; }
+      .data-table th { padding: 8px 3px; font-size: 11px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms!important; transition-duration: .01ms!important; scroll-behavior: auto!important; } }
+
+    /* Interface limpa — preserva a dinâmica investigativa e a mediação docente */
+    :root { --radius:16px; --cream:#f6f8f5; --shadow:0 4px 20px rgba(32,57,43,.045); }
+    .sr-only { position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important; }
+    .topbar { padding:13px 0 11px; }
+    .brandmark { width:40px;height:40px;border-radius:12px; }
+    .brand-title { font-size:17px; }
+    .brand-subtitle { letter-spacing:0; }
+    .mode-stamp { font-size:11px; padding:6px 10px; }
+    .stepper { margin-bottom:13px; gap:7px; }
+    .step { min-height:38px;padding:6px;border-radius:10px;font-size:12px; }
+    .step-time { display:none!important; }
+    .step .step-n { margin-right:7px; }
+    .screen-head { margin:0 0 12px; }
+    .screen-head h2 { font-size:clamp(24px,2.5vw,30px); margin:0 0 2px; }
+    .screen-head p { font-size:13px; }
+    .lab-grid { grid-template-columns:minmax(0,1.45fr) minmax(286px,.70fr); gap:13px; }
+    .lab-left,.lab-right,.pane,.formula-stage,.graph-card { padding:17px; }
+    .tagbar { margin-bottom:9px; }
+    .tag { font-size:11px; padding:4px 8px; }
+    .visual-instruction,.control-limits,.lab-note { display:none; }
+    .control-panel { margin-top:12px; }
+    .slider-heading { font-size:13px; }
+    output { font-size:16px; }
+    .slider-row { margin:4px 0; }
+    .readings { margin-top:9px; gap:7px; }
+    .readout { padding:8px 9px; border-radius:11px; }
+    .readout strong { font-size:17px; }
+    .readout span { font-size:11px; }
+    .guess-panel { padding:11px; margin-top:10px; }
+    .guess-panel .field-label { margin-bottom:5px; }
+    .guess-row input { min-height:41px; font-size:16px; }
+    .action-row { margin-top:10px; gap:7px; }
+    .action-row .button { flex:1; font-size:13px; min-height:43px; padding:9px 10px; }
+    .guess-feedback { padding:9px 11px; margin-top:9px; }
+    .guess-feedback strong { margin:0; }
+    .guess-feedback.error p { margin-top:3px; }
+    .lab-right h3 { margin:0 0 6px;font-size:18px; }
+    .mini-progress { margin:4px 0 10px; }
+    .progress-track { display:none; }
+    .progress-caption { margin:0; }
+    .evidence { padding:8px 9px; }
+    .evidence-list { margin:8px 0; }
+    .empty { padding:19px 10px; }
+    .panel-footer { margin-top:12px; }
+    .teacher-check { margin:10px 0;padding:10px 12px;gap:10px; }
+    .teacher-check span { font-size:12px;line-height:1.35; }
+    .teacher-check input { width:18px;height:18px;flex-basis:18px; }
+    .subtle-helper { font-size:11px;margin:6px 0 0; }
+    .extra-tools { margin:13px 0 0; }
+    .extra-tools summary,.compare-details summary { cursor:pointer;border:1px solid var(--border);border-radius:12px;background:white;padding:10px 15px;font-size:13px;font-weight:700;color:#466b55; }
+    .extra-tools[open] summary { margin-bottom:10px; }
+    .lab-dashboard { margin-top:0; }
+    .plot-panel,.missions-panel { padding:15px; }
+    .plot-panel h3,.missions-panel h3 { font-size:16px; }
+    .hold-callout { padding:14px 18px;border-radius:12px;margin-bottom:12px;box-shadow:none; }
+    .hold-callout strong { font-size:15px; }
+    .hold-callout p { font-size:12px; }
+    .debate-grid,.formal-wrap { gap:13px; }
+    .pane h3 { font-size:18px; }
+    .field { margin:11px 0; }
+    .field-label { font-size:13px; }
+    .data-table td { padding:8px 7px; }
+    .compare-details { margin-top:12px; }
+    .compare-details[open] { padding-bottom:12px; }
+    .compare-details .field { margin-top:10px; }
+    .formula-stage h3,.graph-card h3 { font-size:18px; }
+    .form-step.locked { display:none; }
+    .form-step { margin:12px 0;padding:12px; }
+    .form-step .question { font-size:13px; }
+    .form-step.completed { padding:6px 9px; margin:6px 0;background:transparent; }
+    .form-step.completed .question,.form-step.completed p { display:none; }
+    .form-step.completed .eq { margin:0;padding:9px 10px;font-size:16px; }
+    .formula-stage .button.small { min-height:36px; }
+    .form-step .student-answer { margin:11px 0 10px; }
+    .student-answer .field-label { color:#4e6a59; font-size:12px; margin-bottom:6px; }
+    .student-answer textarea { min-height:72px; resize:vertical; font-size:13px; background:white; }
+    .answer-key { background:#eaf5ed; padding:11px 12px; border:1px solid #d1e8d5; border-radius:12px; margin:10px 0; }
+    .answer-key .key-caption { font-size:11px; font-weight:850; letter-spacing:.02em; color:#256b4d; margin-bottom:6px; }
+    .answer-key p:last-child { margin-bottom:0; }
+    .form-step.completed .student-answer,.form-step.completed .key-caption { display:none; }
+    .exit-answer p { margin:0; font-size:13px; color:#355d46; }
+    .graph-wrap { min-height:180px; }
+    .graph-lock { padding:53px 9px; }
+    .exit-panel { padding:13px;margin:12px 0; }
+    .exit-panel h3 { font-size:17px; }
+    .bottom-note { padding-bottom:12px; }
+    .restart-link { font-size:11px;margin-top:0; }
+    .intro-copy { padding:26px; }
+    .intro-copy h1 { font-size:clamp(37px,4.4vw,54px);margin:12px 0 11px; }
+    .intro-copy .lede { font-size:16px; }
+    .prediction { margin-top:13px; }
+    .option-grid { margin:10px 0 15px;gap:8px; }
+    .prediction-choice label { min-height:45px;padding:10px; }
+    .name-field { margin-bottom:0; }
+    .name-field input { padding:10px; }
+    .intro-art { min-height:315px; }
+    @media(max-width:900px) { .lab-grid,.lab-dashboard {grid-template-columns:1fr;} }
+    @media(max-width:820px) { .intro-hero,.debate-grid,.formal-wrap {grid-template-columns:1fr;} .intro-art { min-height:190px; } }
+    @media(max-width:540px) {
+      .app-shell { width:calc(100% - 20px); }
+      .topbar { padding:11px 0; }
+      .mode-stamp { font-size:10px;padding:6px; }
+      .stepper { margin-bottom:10px;gap:4px; }
+      .step { min-height:35px;font-size:11px; }
+      .intro-copy,.lab-left,.lab-right,.pane,.formula-stage,.graph-card { padding:14px; }
+      .intro-hero {gap:10px;}
+      .intro-art { min-height:155px; }
+      .intro-art svg { width:55%; }
+      .intro-copy h1 { font-size:34px; }
+      .screen-head h2 { font-size:25px; }
+      .readings { gap:5px; }
+      .readout { padding:7px 5px; }
+      .readout strong {font-size:15px;}
+      .tag {font-size:10px;}
+      .button {padding:9px 11px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Missão Horta">
+        <div class="brandmark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M5 8v19M16 5v22M27 8v19M5 11l22-4M5 21l22-4" stroke="#dcf7dd" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M9 6c2-3 4-3 7-1M18 9c3-4 7-3 9 0" stroke="#b2de95" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">Missão Horta <span style="color:#4b9c70">2.0</span></div>
+          <div class="brand-subtitle">Laboratório geométrico</div>
+        </div>
+      </div>
+      <div class="mode-stamp">Aula mediada</div>
+    </header>
+
+    <nav class="stepper" aria-label="Etapas da investigação">
+      <button class="step" data-go="intro" type="button"><span class="step-n">1</span>Hipótese</button>
+      <button class="step" data-go="lab" type="button"><span class="step-n">2</span>Explorar</button>
+      <button class="step" data-go="debate" type="button"><span class="step-n">3</span>Conversar</button>
+      <button class="step" data-go="formal" type="button"><span class="step-n">4</span>Concluir</button>
+    </nav>
+
+    <main>
+      <section id="screen-intro" class="screen" aria-labelledby="introTitle">
+        <div class="intro-hero">
+          <div class="card intro-copy">
+            <span class="pill">Desafio</span>
+            <h1 id="introTitle">A horta ideal</h1>
+            <p class="lede">Com <strong>24 metros de cerca</strong> nos quatro lados, qual retângulo oferece a maior área?</p>
+            <div class="name-field"><label for="pairName" class="field-label">Nome ou dupla <span style="font-weight:400;color:var(--muted)">(opcional)</span></label><input id="pairName" placeholder="Para identificar seu registro" maxlength="70" autocomplete="off"></div>
+            <div class="prediction">
+              <div class="question">Qual formato você escolheria?</div>
+              
+              <div class="option-grid" role="radiogroup" aria-label="Hipótese inicial">
+                <div class="prediction-choice"><input type="radio" id="hyp1" name="hyp" value="Bem comprido e estreito"><label for="hyp1">Comprido e estreito</label></div>
+                <div class="prediction-choice"><input type="radio" id="hyp2" name="hyp" value="Comprimento e largura próximos"><label for="hyp2">Lados parecidos</label></div>
+                <div class="prediction-choice"><input type="radio" id="hyp3" name="hyp" value="Todos os lados iguais"><label for="hyp3">Todos os lados iguais</label></div>
+                <div class="prediction-choice"><input type="radio" id="hyp4" name="hyp" value="Ainda não sei"><label for="hyp4">Ainda não sei</label></div>
+              </div>
+              <button class="button primary" type="button" id="startButton">Começar a investigar <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+          <div class="card intro-art" aria-hidden="true">
+            <svg viewBox="0 0 400 365" fill="none">
+              <path d="M28 230 215 122 372 210 190 324Z" fill="#94be9c"/>
+              <path d="M72 226 213 145 334 211 193 292Z" fill="#e3b97f" stroke="#f9e9c4" stroke-width="3"/>
+              <path d="m93 231 121-70 99 54-122 70Z" fill="#80b884"/>
+              <path d="m102 234 112-64M121 245l112-64M141 256l112-64M160 267l112-64" stroke="#c5e6ba" stroke-width="5" stroke-linecap="round"/>
+              <path d="M72 226 213 145 334 211 193 292 72 226Z" stroke="#7e5f37" stroke-width="7" stroke-linejoin="round"/>
+              <path d="M72 226v-37m141-44v-39m121 105v-36M193 292v-38" stroke="#7e5f37" stroke-width="9" stroke-linecap="round"/>
+              <path d="m72 192 141-82 121 66M72 202l141-82 121 66M72 214l141-82 121 66M72 226l141-82 121 66" stroke="#a17845" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="235" cy="60" r="40" fill="#fffcdb"/>
+              <path d="M47 319c25 1 35 4 40 19M310 310c15-7 31-7 45 2" stroke="#6a9d73" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 99c12-19 29-19 42 0M304 104c12-19 29-19 42 0" stroke="#b6d1bc" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        
+      </section>
+
+      <section id="screen-lab" class="screen hidden" aria-labelledby="labTitle">
+        <div class="screen-head">
+          <div><h2 id="labTitle">Teste suas ideias</h2><p>Arraste o terreno, calcule a área e registre.</p></div>
+        </div>
+        <div class="lab-grid">
+          <div class="card lab-left">
+            <div class="tagbar"><span class="tag">Perímetro: 24 m</span><span class="tag blue">Arraste o ponto verde</span></div>
+            <div class="canvas-shell">
+              <svg id="gardenSvg" viewBox="0 0 440 335" role="img" aria-label="Terreno retangular em vista superior, com uma alça arrastável na lateral direita para mudar a dimensão horizontal">
+                <defs>
+                  <linearGradient id="soil" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#d8edc6"/><stop offset="1" stop-color="#9cc99e"/></linearGradient>
+                  <pattern id="meterGrid" width="20" height="20" x="0" y="8" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" stroke="#b6ceae" stroke-width="1" fill="none" opacity=".34"/></pattern>
+                </defs>
+                <rect width="440" height="310" fill="url(#meterGrid)"/>
+                <g id="gardenDrawing"></g>
+                <text x="220" y="322" fill="#668078" font-size="12" text-anchor="middle">Cada quadradinho representa 1 m × 1 m</text>
+              </svg>
+            </div>
+            
+            <div class="control-panel">
+              <div class="slider-heading"><label for="sideSlider">Mude o lado</label><output id="sideOutput" for="sideSlider">3 m</output></div>
+              <div class="slider-row">
+                <button type="button" class="button secondary iconbtn" id="decreaseSide" aria-label="Diminuir o lado em meio metro">−</button>
+                <input id="sideSlider" type="range" min="0.5" max="11.5" step="0.5" value="3" aria-label="Comprimento do lado horizontal, em metros">
+                <button type="button" class="button secondary iconbtn" id="increaseSide" aria-label="Aumentar o lado em meio metro">+</button>
+              </div>
+              <div class="control-limits"><span>0,5 m</span><span>11,5 m</span></div>
+              <div class="readings" aria-live="polite">
+                <div class="readout"><span>Horizontal</span><strong id="valueX">3 m</strong></div>
+                <div class="readout"><span>Vertical</span><strong id="valueY">9 m</strong></div>
+                <div class="readout area"><span>Área medida</span><strong id="valueArea">? m²</strong></div>
+              </div>
+              <div class="guess-panel" id="guessPanel">
+                <label class="field-label" for="areaGuessInput">Qual é a área?</label>
+                <div class="guess-row"><input type="text" id="areaGuessInput" inputmode="decimal" autocomplete="off" placeholder="Sua resposta" aria-describedby="areaGuessHelp" maxlength="12"><span class="guess-unit">m²</span></div>
+                <span class="sr-only" id="areaGuessHelp">Digite a área do retângulo em metros quadrados. Use vírgula nos decimais.</span>
+              </div>
+              <div id="guessFeedback" class="guess-feedback" hidden aria-live="polite"></div>
+              <div class="action-row">
+                <button type="button" class="button dark" id="measureBtn">Conferir</button>
+                <button type="button" class="button secondary" id="saveExperimentBtn" disabled>Registrar</button>
+              </div>
+              <p class="sr-only" id="labStatus" role="status">A área só será exibida quando você acertar o cálculo.</p>
+            </div>
+          </div>
+          <aside class="card lab-right" aria-labelledby="notesTitle">
+            <h3 id="notesTitle">Meus terrenos</h3>
+            
+            <div class="mini-progress">
+              <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+              <div class="progress-caption" id="progressText">0/5 terrenos</div>
+            </div>
+            <div id="evidenceList" class="evidence-list" aria-live="polite"><div class="empty">Nenhum terreno registrado.</div></div>
+            
+            <div class="panel-footer">
+              <button type="button" class="button primary" id="openDebateBtn" disabled>Próxima fase →</button>
+              <p class="hint subtle-helper" id="debateUnlockHint">Registre 5 terrenos para continuar.</p>
+            </div>
+          </aside>
+        </div>
+        <details class="extra-tools"><summary>Ver gráfico e desafios opcionais</summary>
+        <div class="lab-dashboard">
+          <div class="card plot-panel">
+            
+            <h3>Gráfico em construção</h3>
+            <p>Cada terreno registrado vira um ponto.</p>
+            <div class="plot-svg-shell" id="labPlot" aria-live="polite"></div>
+          </div>
+          <div class="card missions-panel">
+            
+            <h3>Experimente também</h3>
+            <div class="mission-card"><strong>Compare dois formatos</strong><span>O que muda na área?</span></div>
+            <div class="mission-card"><strong>Mesma área?</strong><span>Encontre dois terrenos diferentes com áreas iguais.</span></div>
+            <div class="mission-card"><strong>Sua justificativa</strong><span>Como defenderia sua escolha?</span></div>
+          </div>
+        </div>
+        </details>
+      </section>
+
+      <section id="screen-debate" class="screen hidden" aria-labelledby="debateTitle">
+        <div class="screen-head"><div><h2 id="debateTitle">Vamos conversar</h2><p>Compare suas descobertas com a turma.</p></div></div>
+        <div class="hold-callout"><strong>Pausa com o professor</strong><p>Qual terreno parece melhor? Como podemos justificar?</p></div>
+        <div class="debate-grid">
+          <div class="card pane"><h3>Seus resultados</h3><div style="overflow-x:auto"><table class="data-table"><thead><tr><th>#</th><th>Horizontal</th><th>Vertical</th><th>Área</th></tr></thead><tbody id="experimentRows"></tbody></table></div><button type="button" class="button secondary small" id="backToLab" style="margin-top:14px">← Voltar ao terreno</button><details class="compare-details"><summary>Comparar dois terrenos</summary><div class="field"><label class="field-label" for="compareA">Terreno A</label><select id="compareA"></select></div><div class="field"><label class="field-label" for="compareB">Terreno B</label><select id="compareB"></select></div><div class="two-comparisons" id="comparisonView"></div></details></div>
+          <div class="card pane"><h3>Defenda sua ideia</h3>
+            <div class="field"><label class="field-label" for="preferredTerrain">Qual terreno você escolhe?</label><select id="preferredTerrain"><option value="">Escolha um dos registros</option></select></div>
+            <div class="field"><label class="field-label" for="argumentInput">Por que você escolheu esse terreno?</label><textarea id="argumentInput" placeholder="Explique sua escolha..."></textarea></div>
+            <div class="field"><label class="field-label" for="hypReview">Você mudou de ideia?</label><select id="hypReview"><option value="">Selecione uma opção</option><option value="Minha hipótese se confirmou">Minha hipótese se confirmou</option><option value="Mudei de ideia">Mudei de ideia</option><option value="Ainda tenho dúvidas">Ainda tenho dúvidas</option></select></div>
+            <button type="button" class="button secondary" id="defendBtn">Salvar justificativa</button>
+            <button type="button" class="button primary" id="formalBtn">Próxima fase →</button>
+            
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-formal" class="screen hidden" aria-labelledby="formalTitle">
+        <div class="screen-head"><div><h2 id="formalTitle">Vamos justificar?</h2><p>Responda às perguntas junto com o professor.</p></div></div>
+        <div class="formal-wrap">
+          <div class="card formula-stage">
+            <h3>Construindo a resposta</h3>
+            <div class="form-step" id="formulaStep1"><div class="question">1. Se os lados do terreno medem x e y, como representar os 24 metros de cerca?</div><div class="student-answer"><label class="field-label" for="formalInput1">Sua resposta</label><textarea id="formalInput1" rows="2" placeholder="Escreva antes de conferir..." aria-label="Sua resposta para a questão 1"></textarea></div><div id="formulaAnswer1" class="answer-key" hidden><div class="key-caption">Gabarito para comparar</div><div class="eq">2x + 2y = 24</div><p>O perímetro soma dois lados de cada medida.</p></div><button type="button" class="button secondary small reveal" data-reveal="1">Conferir gabarito</button><button type="button" class="button ghost small review" data-review="1" hidden>Rever resposta e gabarito</button></div>
+            <div class="form-step locked" id="formulaStep2"><div class="question">2. Se escolhermos a medida x, quanto deve medir o outro lado?</div><div class="student-answer"><label class="field-label" for="formalInput2">Sua resposta</label><textarea id="formalInput2" rows="2" placeholder="Escreva antes de conferir..." aria-label="Sua resposta para a questão 2"></textarea></div><div id="formulaAnswer2" class="answer-key" hidden><div class="key-caption">Gabarito para comparar</div><div class="eq">y = 12 − x</div><p>Os dois lados diferentes somam 12 metros.</p></div><button type="button" class="button secondary small reveal" data-reveal="2" disabled>Conferir gabarito</button><button type="button" class="button ghost small review" data-review="2" hidden>Rever resposta e gabarito</button></div>
+            <div class="form-step locked" id="formulaStep3"><div class="question">3. Como escrever a área usando apenas x?</div><div class="student-answer"><label class="field-label" for="formalInput3">Sua resposta</label><textarea id="formalInput3" rows="2" placeholder="Escreva antes de conferir..." aria-label="Sua resposta para a questão 3"></textarea></div><div id="formulaAnswer3" class="answer-key" hidden><div class="key-caption">Gabarito para comparar</div><div class="eq">A(x) = x · (12 − x)</div><p>A área é o produto das duas dimensões.</p></div><button type="button" class="button secondary small reveal" data-reveal="3" disabled>Conferir gabarito</button><button type="button" class="button ghost small review" data-review="3" hidden>Rever resposta e gabarito</button></div>
+            <div class="form-step locked" id="formulaStep4"><div class="question">4. O que acontece com a área quando x aumenta?</div><div class="student-answer"><label class="field-label" for="formalInput4">Sua resposta</label><textarea id="formalInput4" rows="2" placeholder="Escreva antes de conferir..." aria-label="Sua resposta para a questão 4"></textarea></div><div id="formulaAnswer4" class="answer-key" hidden><div class="key-caption">Gabarito para comparar</div><div class="eq">A(x) = 12x − x²</div><p>Compare o gráfico com os valores do jogo e localize seu ponto mais alto.</p></div><button type="button" class="button secondary small reveal" data-reveal="4" disabled>Conferir gabarito e gráfico</button><button type="button" class="button ghost small review" data-review="4" hidden>Rever resposta e gabarito</button></div>
+            <div class="form-step locked" id="formulaStep5"><div class="question">5. Qual função podemos escrever para encontrar, não só a maior área como todas as áreas?</div><div class="student-answer"><label class="field-label" for="formalInput5">Sua resposta</label><textarea id="formalInput5" rows="2" placeholder="Escreva antes de conferir..." aria-label="Sua resposta para a questão 5"></textarea></div><div id="formulaAnswer5" class="answer-key" hidden><div class="key-caption">Gabarito para comparar</div><div class="eq">A(x) = 36 − (x − 6)²</div><p>Como um quadrado nunca é negativo, A(x) ≤ 36. A igualdade ocorre quando x = 6; então y = 6. Logo, a área máxima é 36 m².</p></div><button type="button" class="button secondary small reveal" data-reveal="5" disabled>Conferir gabarito</button><button type="button" class="button ghost small review" data-review="5" hidden>Rever resposta e gabarito</button></div>
+          </div>
+          <aside class="card graph-card"><h3>Gráfico da área</h3><div class="graph-wrap" id="graphWrap"><div class="graph-lock">Aguarde a discussão.</div></div><div id="finalHighlight" class="challenge hidden"><strong>Conclusão construída pela turma</strong><p>Com 24 m de cerca nos quatro lados, a maior área retangular é 36 m², obtida no quadrado 6 m × 6 m.</p></div><div class="exit-panel"><h3>Para encerrar</h3><label class="field-label" for="exitInput">Por que terrenos com o mesmo perímetro podem ter áreas diferentes?</label><textarea id="exitInput" placeholder="Sua conclusão..."></textarea>
+            <div class="action-row"><button type="button" class="button secondary small" id="saveExitBtn">Salvar resposta</button><button type="button" class="button primary small" id="exitGabaritoBtn">Conferir gabarito</button></div>
+            <div class="answer-key exit-answer" id="exitGabarito" hidden><div class="key-caption">Gabarito para comparar</div><p>Mesmo com 24 metros de cerca, é possível distribuir as medidas dos lados de maneiras diferentes. Como a área depende do produto entre comprimento e largura, ela pode mudar mesmo quando o perímetro é o mesmo.</p></div></div><div class="footer-row"><button type="button" class="button primary" id="exportBtn">Baixar meus registros</button></div><p class="hint" style="margin-top:12px"><strong>Para casa:</strong> resolva a ficha da horta junto ao muro.</p></aside>
+        </div>
+      </section>
+    </main>
+    <footer class="bottom-note"><button type="button" class="restart-link" id="resetBtn">Reiniciar investigação</button></footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    'use strict';
+    const STORAGE_KEY = 'missao-horta-v2-clean';
+    const screens = ['intro','lab','debate','formal'];
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+    const fresh = () => ({ hypothesis:'', pair:'', stage:0, screen:'intro', side:3, experiments:[], argument:'', chosen:'', reflection:'', formalStep:0, formalAnswers:['','','','',''], exit:'', exitGabarito:false });
+    let state = fresh();
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (saved && typeof saved === 'object' && Array.isArray(saved.experiments)) {
+        state = { ...fresh(), ...saved };
+        state.experiments = state.experiments.filter(e => Number.isFinite(e.x) && e.x > 0 && e.x < 12).slice(0,12);
+        state.stage = Math.max(0, Math.min(3, Number(state.stage) || 0));
+        state.formalStep = Math.max(0, Math.min(5, Number(state.formalStep) || 0));
+        if (!Array.isArray(state.formalAnswers)) state.formalAnswers = ['','','','',''];
+        state.formalAnswers = Array.from({length:5},(_,i)=>String(state.formalAnswers[i] || ''));
+        // Previous versions had no answer fields: require written answers before showing gabaritos.
+        const answeredInOrder = state.formalAnswers.findIndex(answer => !answer.trim());
+        const answersCount = answeredInOrder === -1 ? 5 : answeredInOrder;
+        state.formalStep = Math.min(state.formalStep, answersCount);
+        // Apply the new five-terrain prerequisite to saved investigations too.
+        const uniqueTerrains = new Set(state.experiments.map(e => Math.min(e.x, 12-e.x))).size;
+        if (state.stage >= 2 && uniqueTerrains < 5) {
+          state.stage = 1; state.screen = 'lab'; state.formalStep = 0;
+        }
+      }
+    } catch(e) { /* Private browsing or disabled storage: game still works */ }
+    let measured = false;
+    let areaGuess = null;
+    let guessFeedbackMessage = '';
+    let toastTimer;
+    const format = n => new Intl.NumberFormat('pt-BR', { maximumFractionDigits:2 }).format(n);
+    const safeNum = n => Number(Math.round(n * 100) / 100);
+    const areaFor = x => safeNum(x * (12-x));
+    function persist() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
+    function toast(message) { const el = $('#toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2700); }
+    function show(screen) {
+      const targetIndex = screens.indexOf(screen);
+      if (targetIndex < 0 || targetIndex > state.stage) return;
+      state.screen = screen;
+      $$('.screen').forEach(s => s.classList.toggle('hidden', s.id !== `screen-${screen}`));
+      $$('.step').forEach((b,i) => { b.disabled = i > state.stage; b.classList.toggle('is-active', i === targetIndex); if (i === targetIndex) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current'); });
+      if (screen === 'lab') renderLab();
+      if (screen === 'debate') renderDebate();
+      if (screen === 'formal') renderFormal();
+      persist();
+      window.scrollTo({top:0,behavior:'instant'});
+    }
+    $$('.step').forEach(b => b.addEventListener('click', () => show(b.dataset.go)));
+    $$('input[name="hyp"]').forEach(input => { if (input.value === state.hypothesis) input.checked = true; });
+    $('#pairName').value = state.pair || '';
+    $('#startButton').addEventListener('click', () => {
+      const checked = $('input[name="hyp"]:checked');
+      if (!checked) { toast('Escolha uma hipótese antes de investigar.'); return; }
+      state.hypothesis = checked.value;
+      state.pair = $('#pairName').value.trim();
+      state.stage = Math.max(state.stage, 1);
+      show('lab');
+    });
+    const slider = $('#sideSlider');
+    let x = Number.isFinite(Number(state.side)) && Number(state.side) >= .5 && Number(state.side) <= 11.5 ? Number(state.side) : 3;
+    x = Math.round(x*2)/2;
+    slider.value=String(x);
+    function setX(value) {
+      const v = Math.max(.5, Math.min(11.5, Math.round(Number(value)*2)/2));
+      x = v;
+      state.side = x;
+      measured = false;
+      areaGuess = null;
+      guessFeedbackMessage = '';
+      $('#areaGuessInput').value = '';
+      $('#areaGuessInput').removeAttribute('aria-invalid');
+      slider.value = String(x);
+      renderGarden();
+      updateReadouts();
+      persist();
+    }
+    slider.addEventListener('input', () => setX(slider.value));
+    $('#decreaseSide').addEventListener('click', () => setX(x-.5));
+    $('#increaseSide').addEventListener('click', () => setX(x+.5));
+    // Same fixed scale for every configuration; the geometry never stretches to fit.
+    const DRAW = { cx:220, cy:148, scale:20.0 };
+    function renderGarden() {
+      const y = 12-x;
+      const w = x*DRAW.scale, h = y*DRAW.scale;
+      const left = DRAW.cx-w/2, top = DRAW.cy-h/2;
+      const fmt=n=>Number(n).toFixed(2);
+      let lines='';
+      for(let t=1;t<x-0.001;t++) { const px=left+t*DRAW.scale; lines+=`<line x1="${fmt(px)}" y1="${fmt(top)}" x2="${fmt(px)}" y2="${fmt(top+h)}" stroke="#fff" stroke-opacity=".65" stroke-width="1"/>`; }
+      for(let t=1;t<y-0.001;t++) { const py=top+t*DRAW.scale; lines+=`<line x1="${fmt(left)}" y1="${fmt(py)}" x2="${fmt(left+w)}" y2="${fmt(py)}" stroke="#fff" stroke-opacity=".65" stroke-width="1"/>`; }
+      const handleX=left+w;
+      $('#gardenDrawing').innerHTML=`
+        <rect x="${fmt(left)}" y="${fmt(top)}" width="${fmt(w)}" height="${fmt(h)}" rx="2" fill="url(#soil)" stroke="#2d785a" stroke-width="4"/>
+        ${lines}
+        <g stroke="#96784c" stroke-width="3" stroke-linecap="round"><path d="M${fmt(left)} ${fmt(top)}v${fmt(h)}M${fmt(handleX)} ${fmt(top)}v${fmt(h)}M${fmt(left)} ${fmt(top)}h${fmt(w)}M${fmt(left)} ${fmt(top+h)}h${fmt(w)}"/></g>
+        <g fill="#947342">${[[left,top],[handleX,top],[left,top+h],[handleX,top+h]].map(([a,b])=>`<circle cx="${fmt(a)}" cy="${fmt(b)}" r="4"/>`).join('')}</g>
+        ${x>=2.5 && y>=2.5 ? `<text x="${fmt(DRAW.cx)}" y="${fmt(DRAW.cy+4)}" fill="#275d45" font-size="12" text-anchor="middle" font-weight="900" pointer-events="none">HORTA</text>` : ''}
+        <rect x="${fmt(DRAW.cx-42)}" y="${fmt(top+h+10)}" width="84" height="23" rx="11" fill="#ffffff" stroke="#d7e4d3"/>
+        <text x="${fmt(DRAW.cx)}" y="${fmt(top+h+25.5)}" text-anchor="middle" fill="#28523e" font-size="12.5" font-weight="800">${format(x)} m</text>
+        <g transform="translate(${fmt(left-16)} ${fmt(DRAW.cy)}) rotate(-90)"><rect x="-42" y="-13" width="84" height="23" rx="11" fill="#fff" stroke="#d7e4d3"/><text x="0" y="3" text-anchor="middle" fill="#28523e" font-size="12.5" font-weight="800">${format(y)} m</text></g>
+        <g id="dragHandle" class="drag-handle" role="button" tabindex="0" aria-label="Alça para modificar o terreno com o mouse" style="touch-action:none">
+          <circle cx="${fmt(handleX)}" cy="${fmt(DRAW.cy)}" r="21" fill="transparent" />
+          <circle cx="${fmt(handleX)}" cy="${fmt(DRAW.cy)}" r="12" fill="#176e54" stroke="#fff" stroke-width="3"/>
+          <path d="M${fmt(handleX-5)} ${fmt(DRAW.cy)}h10m-8 -3l-3 3 3 3m6 -6l3 3 -3 3" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+        </g>`;
+    }
+    // The right-side handle changes x; y = 12 - x is maintained automatically.
+    let dragging=false;
+    const gardenSvg=$('#gardenSvg');
+    const svgPoint=event=>{ const pt=gardenSvg.createSVGPoint(); pt.x=event.clientX;pt.y=event.clientY; const m=gardenSvg.getScreenCTM();return m ? pt.matrixTransform(m.inverse()) : null; };
+    gardenSvg.addEventListener('pointerdown', e=>{
+      if(!e.target.closest('#dragHandle')) return;
+      dragging=true; gardenSvg.setPointerCapture(e.pointerId); e.preventDefault();
+    });
+    gardenSvg.addEventListener('pointermove',e=>{
+      if(!dragging)return;
+      const p=svgPoint(e);if(!p)return;
+      setX((p.x-DRAW.cx)*2/DRAW.scale);
+    });
+    const endDrag=()=>dragging=false;
+    gardenSvg.addEventListener('pointerup',endDrag);
+    gardenSvg.addEventListener('pointercancel',endDrag);
+    gardenSvg.addEventListener('lostpointercapture',endDrag);
+    gardenSvg.addEventListener('keydown',e=>{
+      if(document.activeElement?.id==='dragHandle'&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){e.preventDefault();setX(x+(e.key==='ArrowRight'?.5:-.5));}
+    });
+    function updateReadouts() {
+      $('#sideOutput').textContent = `${format(x)} m`;
+      $('#valueX').textContent = `${format(x)} m`;
+      $('#valueY').textContent = `${format(12-x)} m`;
+      $('#valueArea').textContent = measured ? `${format(areaFor(x))} m²` : '? m²';
+      $('#saveExperimentBtn').disabled = !measured || state.experiments.some(e => Math.min(e.x,e.y) === Math.min(x,12-x)) || state.experiments.length >= 12;
+      $('#measureBtn').disabled = measured;
+      $('#guessPanel').hidden = measured;
+      const feedback = $('#guessFeedback');
+      feedback.hidden = !measured && !guessFeedbackMessage;
+      feedback.classList.toggle('error', !measured && !!guessFeedbackMessage);
+      feedback.replaceChildren();
+      if (measured) {
+        const title = document.createElement('strong');
+        title.textContent = `Resposta correta! Área: ${format(areaFor(x))} m²`;
+        const description = document.createElement('p');
+        description.textContent = 'Registre ou tente outro terreno.';
+        feedback.append(title, description);
+      } else if (guessFeedbackMessage) {
+        const title = document.createElement('strong');
+        title.textContent = 'Ainda não está correto. Tente novamente.';
+        const description = document.createElement('p');
+        description.textContent = guessFeedbackMessage;
+        feedback.append(title, description);
+      }
+      $('#labStatus').textContent = measured
+        ? 'Resposta confirmada. Registre o projeto ou escolha outras dimensões.'
+        : 'A área só será exibida quando você acertar o cálculo.';
+    }
+    function readAreaGuess() {
+      const raw = $('#areaGuessInput').value.trim();
+      if (!/^\d+(?:[,.]\d{1,2})?$/.test(raw)) return null;
+      const value = Number(raw.replace(',', '.'));
+      return Number.isFinite(value) && value >= 0 && value <= 1000000 ? value : null;
+    }
+    $('#measureBtn').addEventListener('click', () => {
+      const guess = readAreaGuess();
+      if (guess === null) {
+        guessFeedbackMessage = 'Digite um número válido em m². Use até duas casas decimais, se necessário.';
+        $('#areaGuessInput').setAttribute('aria-invalid','true');
+        updateReadouts();
+        $('#areaGuessInput').focus();
+        return;
+      }
+      if (Math.abs(guess - areaFor(x)) > 0.001) {
+        // Do not reveal the area, its difference from the guess, or any upper/lower hint.
+        guessFeedbackMessage = 'Revise o cálculo e tente novamente.';
+        $('#areaGuessInput').setAttribute('aria-invalid','true');
+        updateReadouts();
+        $('#areaGuessInput').focus();
+        $('#areaGuessInput').select();
+        return;
+      }
+      areaGuess = guess;
+      guessFeedbackMessage = '';
+      $('#areaGuessInput').removeAttribute('aria-invalid');
+      measured = true;
+      updateReadouts();
+    });
+    $('#areaGuessInput').addEventListener('input', () => {
+      if (!guessFeedbackMessage) return;
+      guessFeedbackMessage = '';
+      $('#areaGuessInput').removeAttribute('aria-invalid');
+      updateReadouts();
+    });
+    $('#areaGuessInput').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !measured) { event.preventDefault(); $('#measureBtn').click(); }
+    });
+    $('#saveExperimentBtn').addEventListener('click', () => {
+      if (!measured) return;
+      if (state.experiments.some(e => Math.min(e.x,e.y) === Math.min(x,12-x))) { toast('Esse formato já foi registrado. Teste outro.'); return; }
+      if (state.experiments.length >= 12) { toast('Seu caderno está cheio. Remova algum registro antes.'); return; }
+      state.experiments.push({ x, y:safeNum(12-x), area: areaFor(x), guess: areaGuess });
+      measured = false;
+      areaGuess = null;
+      guessFeedbackMessage = '';
+      $('#areaGuessInput').value = '';
+      $('#areaGuessInput').removeAttribute('aria-invalid');
+      updateReadouts(); renderEvidence(); persist();
+      toast('Projeto registrado. Continue comparando!');
+    });
+    function evidenceReady() { return new Set(state.experiments.map(e => Math.min(e.x, e.y))).size >= 5 && new Set(state.experiments.map(e => e.area)).size >= 2; }
+    function renderEvidence() {
+      const list = $('#evidenceList'); list.replaceChildren();
+      if (!state.experiments.length) {
+        const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'Nenhum terreno registrado.'; list.appendChild(empty);
+      } else {
+        state.experiments.forEach((exp,i) => {
+          const item = document.createElement('div'); item.className = 'evidence';
+          const num = document.createElement('div'); num.className = 'num'; num.textContent = String(i+1);
+          const info = document.createElement('div');
+          const strong = document.createElement('strong'); strong.textContent = `${format(exp.x)} × ${format(exp.y)} m`;
+          const span = document.createElement('span'); span.textContent = `Área: ${format(exp.area)} m²`;
+          info.append(strong,span);
+          const del = document.createElement('button'); del.type = 'button'; del.textContent = '×'; del.setAttribute('aria-label',`Excluir terreno ${i+1}`);
+          del.addEventListener('click', () => { state.experiments.splice(i,1); renderEvidence(); persist(); });
+          item.append(num,info,del); list.append(item);
+        });
+      }
+      const count = state.experiments.length;
+      $('#progressFill').style.width = `${Math.min(100, new Set(state.experiments.map(e => Math.min(e.x, e.y))).size/5*100)}%`;
+      $('#progressText').textContent = `${new Set(state.experiments.map(e => Math.min(e.x, e.y))).size}/5 terrenos`;
+      const ready = evidenceReady();
+      $('#openDebateBtn').disabled = !ready;
+      $('#debateUnlockHint').textContent = ready ? 'Pode continuar.' : new Set(state.experiments.map(e => Math.min(e.x, e.y))).size < 5 ? 'Registre 5 formatos diferentes.' : 'Registre áreas diferentes.';
+      renderLabPlot();
+    }
+    function renderLab() { renderGarden(); updateReadouts(); renderEvidence(); }
+    function plotSvg(includeCurve=false) {
+      const px=n=>45+n/12*363;
+      const py=n=>222-n/40*183;
+      const gridY=[0,10,20,30,40].map(n=>`<line x1="45" y1="${py(n)}" x2="408" y2="${py(n)}" stroke="#e3ece4"/><text x="38" y="${py(n)+4}" text-anchor="end" fill="#617769" font-size="12">${n}</text>`).join('');
+      const gridX=[0,2,4,6,8,10,12].map(n=>`<line x1="${px(n)}" y1="39" x2="${px(n)}" y2="222" stroke="#e3ece4"/><text x="${px(n)}" y="241" text-anchor="middle" fill="#617769" font-size="12">${n}</text>`).join('');
+      const points=state.experiments.map(e=>`<circle cx="${px(e.x)}" cy="${py(e.area)}" r="6" stroke="white" stroke-width="2.5" fill="#df8a4d"><title>${format(e.x)} m, ${format(e.area)} m²</title></circle>`).join('');
+      let curve='';
+      if(includeCurve){let d='';for(let u=0;u<=12.00001;u+=.1)d+=(u===0?'M':'L')+px(u).toFixed(2)+','+py(u*(12-u)).toFixed(2);curve=`<path d="${d}" fill="none" stroke="#267c5b" stroke-width="3.4" stroke-linecap="round"/>`;}
+      return `<svg viewBox="0 0 445 270" role="img" aria-label="Gráfico das áreas dos terrenos registrados, sem a curva completa"><text x="46" y="22" font-size="12" fill="#486450">Área (m²)</text>${gridY}${gridX}<path d="M45 39 V222 H408" stroke="#4c6b57" stroke-width="1.7" fill="none"/>${curve}${points}<text x="225" y="264" text-anchor="middle" fill="#486450" font-size="12">Lado horizontal (m)</text></svg>`;
+    }
+    function renderLabPlot(){
+      const el=$('#labPlot');
+      if(!state.experiments.length){el.innerHTML='<div class="empty">O gráfico aparecerá após os registros.</div>';return;}
+      el.innerHTML=plotSvg(false);
+    }
+    $('#openDebateBtn').addEventListener('click', () => {
+      if (!evidenceReady()) return;
+      state.stage = Math.max(state.stage,2); show('debate');
+    });
+    function renderDebate() {
+      const tbody = $('#experimentRows'); tbody.replaceChildren();
+      const select = $('#preferredTerrain'); const current = state.chosen;
+      select.replaceChildren(); const opt = document.createElement('option'); opt.value = ''; opt.textContent = 'Escolha um dos registros'; select.append(opt);
+      state.experiments.forEach((exp,i) => {
+        const row = document.createElement('tr');
+        [`${i+1}`,`${format(exp.x)} m`,`${format(exp.y)} m`,`${format(exp.area)} m²`].forEach(t => { const td = document.createElement('td'); td.textContent=t; row.appendChild(td); });
+        tbody.append(row);
+        const option = document.createElement('option'); option.value = String(exp.x); option.textContent = `Projeto ${i+1}: ${format(exp.x)} × ${format(exp.y)} m (${format(exp.area)} m²)`; select.append(option);
+      });
+      select.value = state.experiments.some(e => String(e.x) === current) ? current : '';
+      renderCompareSelectors();
+      $('#argumentInput').value = state.argument;
+      $('#hypReview').value = state.reflection;
+    }
+    $('#backToLab').addEventListener('click', () => show('lab'));
+    function renderCompareSelectors(){
+      const selects=[$('#compareA'),$('#compareB')];
+      for(let j=0;j<2;j++){
+        const value=selects[j].value;
+        selects[j].replaceChildren();
+        state.experiments.forEach((e,i)=>{const opt=document.createElement('option');opt.value=String(i);opt.textContent=`${format(e.x)} × ${format(e.y)} m`;selects[j].append(opt);});
+        selects[j].value=value&&Number(value)<state.experiments.length?value:String(Math.min(j,state.experiments.length-1));
+      }
+      renderComparison();
+    }
+    function renderComparison(){
+      const view=$('#comparisonView');view.replaceChildren();
+      for(const id of ['compareA','compareB']){
+        const e=state.experiments[Number($('#'+id).value)];if(!e)continue;
+        const card=document.createElement('div');card.className='comparison-item';
+        const w=e.x*8,h=e.y*8;
+        const rect=`<rect x="${75-w/2}" y="${66-h/2}" width="${w}" height="${h}" fill="#bfe1b9" stroke="#227753" stroke-width="3"/>`;
+        card.innerHTML=`<div class="smallcaps">Terreno ${id==='compareA'?'A':'B'}</div><svg viewBox="0 0 150 133" aria-label="Terreno ${id==='compareA'?'A':'B'}: ${format(e.x)} por ${format(e.y)} metros">${rect}</svg><p>${format(e.x)} × ${format(e.y)} m<br><strong>${format(e.area)} m²</strong></p>`;
+        view.append(card);
+      }
+    }
+    $('#compareA').addEventListener('change',renderComparison);
+    $('#compareB').addEventListener('change',renderComparison);
+    function saveArgument(){
+      const choice=$('#preferredTerrain').value;
+      const argument=$('#argumentInput').value.trim();
+      const review=$('#hypReview').value;
+      if(!choice){toast('Escolha um projeto para defender.');return false;}
+      if(argument.length<18){toast('Explique melhor sua hipótese antes de continuar.');$('#argumentInput').focus();return false;}
+      if(!review){toast('Compare sua hipótese inicial com o que observou.');$('#hypReview').focus();return false;}
+      state.chosen=choice;state.argument=argument;state.reflection=review;persist();toast('Argumento registrado.');return true;
+    }
+    $('#formalBtn').addEventListener('click',()=>{
+      if(!saveArgument())return;
+      state.stage=Math.max(state.stage,3);show('formal');
+    });
+    $('#defendBtn').addEventListener('click', saveArgument);
+    function renderFormal() {
+      for(let step=1;step<=5;step++) {
+        const field = $(`#formalInput${step}`);
+        field.value = state.formalAnswers[step-1] || '';
+        field.disabled = state.formalStep < step-1;
+        const visible = state.formalStep >= step;
+        $(`#formulaAnswer${step}`).hidden = !visible;
+        const btn = $(`[data-reveal="${step}"]`);
+        btn.hidden = visible;
+        btn.disabled = state.formalStep < step-1;
+        $(`#formulaStep${step}`).classList.toggle('locked',state.formalStep < step-1);
+        const stepCard = $(`#formulaStep${step}`);
+        const previous = visible && step < state.formalStep;
+        if (!previous) stepCard.classList.remove('expanded');
+        stepCard.classList.toggle('completed', previous && !stepCard.classList.contains('expanded'));
+        const reviewBtn = $(`[data-review="${step}"]`);
+        reviewBtn.hidden = !previous;
+        reviewBtn.textContent = stepCard.classList.contains('expanded') ? 'Ocultar revisão' : 'Rever resposta e gabarito';
+      }
+      renderGraph();
+      $('#finalHighlight').classList.toggle('hidden',state.formalStep < 5);
+      $('#exitInput').value=state.exit;
+      $('#exitGabarito').hidden = !state.exitGabarito || state.formalStep < 5 || !state.exit.trim();
+      $('#exitGabaritoBtn').disabled = state.formalStep < 5;
+    }
+    for(let step=1;step<=5;step++) {
+      $(`#formalInput${step}`).addEventListener('input', event=>{
+        state.formalAnswers[step-1] = event.target.value;
+        persist();
+      });
+    }
+    $$('.review').forEach(btn => btn.addEventListener('click', () => {
+      const step = Number(btn.dataset.review);
+      const card = $(`#formulaStep${step}`);
+      card.classList.toggle('expanded');
+      card.classList.toggle('completed', !card.classList.contains('expanded'));
+      btn.textContent = card.classList.contains('expanded') ? 'Ocultar revisão' : 'Rever resposta e gabarito';
+    }));
+    $$('.reveal').forEach(btn => btn.addEventListener('click', () => {
+      const step = Number(btn.dataset.reveal);
+      if (step !== state.formalStep+1) return;
+      const studentAnswer = $(`#formalInput${step}`).value.trim();
+      if (studentAnswer.length < 3) { toast('Escreva sua resposta antes de conferir o gabarito.'); $(`#formalInput${step}`).focus(); return; }
+      state.formalAnswers[step-1]=studentAnswer;
+      state.formalStep=step; renderFormal(); persist();
+      toast(step === 5 ? 'A justificativa foi construída.' : 'Compare sua resposta com o gabarito antes de avançar.');
+    }));
+    function renderGraph() {
+      const wrap = $('#graphWrap');
+      if (state.formalStep < 4) { wrap.innerHTML='<div class="graph-lock">Aguarde a discussão.</div>'; return; }
+      const px = n => 43 + n/12 * 299;
+      const py = n => 210 - n/40*173;
+      let path='';
+      for(let n=0;n<=12.00001;n+=.1) path += (n === 0?'M':' L')+px(n).toFixed(2)+','+py(n*(12-n)).toFixed(2);
+      const points = state.experiments.map(e => `<circle cx="${px(e.x).toFixed(2)}" cy="${py(e.area).toFixed(2)}" r="4.1" fill="#e28a4b" stroke="white" stroke-width="1.7"/>`).join('');
+      const maxLabel = state.formalStep >= 5 ? `<circle cx="${px(6)}" cy="${py(36)}" r="5.5" fill="#1d6a52" stroke="#ffffff" stroke-width="2"/><text x="${px(6)+10}" y="${py(36)-10}" font-size="11" font-weight="800" fill="#1d6a52">(6; 36)</text>` : '';
+      wrap.innerHTML = `<svg viewBox="0 0 372 259" role="img" aria-label="Gráfico da área em função do lado horizontal, com os experimentos registrados"><g stroke="#d9e5dd" stroke-width="1">${[0,10,20,30,40].map(n => `<line x1="43" y1="${py(n)}" x2="342" y2="${py(n)}"/>`).join('')}${[0,2,4,6,8,10,12].map(n=>`<line x1="${px(n)}" y1="37" x2="${px(n)}" y2="210"/>`).join('')}</g><g stroke="#435e4b" stroke-width="1.5"><line x1="43" y1="34" x2="43" y2="210"/><line x1="43" y1="210" x2="348" y2="210"/></g>${[0,10,20,30,40].map(n=>`<text x="35" y="${py(n)+4}" font-size="10" text-anchor="end" fill="#647b68">${n}</text>`).join('')}${[0,2,4,6,8,10,12].map(n=>`<text x="${px(n)}" y="226" font-size="10" text-anchor="middle" fill="#647b68">${n}</text>`).join('')}<path d="${path}" stroke="#268568" stroke-width="3.6" fill="none" stroke-linejoin="round"/>${points}${maxLabel}<text x="193" y="251" text-anchor="middle" fill="#53695d" font-size="11">Lado horizontal (m)</text><text x="45" y="19" fill="#53695d" font-size="11">Área (m²)</text></svg>`;
+    }
+    $('#saveExitBtn').addEventListener('click', () => { state.exit=$('#exitInput').value.trim(); persist(); toast(state.exit ? 'Síntese guardada neste aparelho.' : 'Digite sua síntese para guardar.'); });
+    $('#exitInput').addEventListener('input', () => { state.exit=$('#exitInput').value; persist(); if(!state.exit.trim()) $('#exitGabarito').hidden=true; });
+    $('#exitGabaritoBtn').addEventListener('click', () => {
+      state.exit=$('#exitInput').value.trim();
+      if (state.formalStep < 5 || state.exit.length < 3) { toast('Escreva sua conclusão antes de conferir.'); $('#exitInput').focus(); return; }
+      state.exitGabarito=true; $('#exitGabarito').hidden=false; persist();
+    });
+    $('#exportBtn').addEventListener('click', () => {
+      state.exit=$('#exitInput').value.trim(); persist();
+      const chosenExp = state.experiments.find(e => String(e.x)===state.chosen);
+      const lines = [
+        'MISSÃO HORTA 2.0 — REGISTRO DA INVESTIGAÇÃO',
+        `Equipe: ${state.pair || 'Não informada'}`, '',
+        'Problema: construir uma horta retangular com 24 m de cerca nos quatro lados.','',
+        `Hipótese inicial: ${state.hypothesis || 'Não registrada'}`,'',
+        'EXPERIMENTOS',
+        ...state.experiments.map((e,i) => `${i+1}. ${format(e.x)} m × ${format(e.y)} m | ${Number.isFinite(e.guess) ? `Previsão: ${format(e.guess)} m² | ` : ''}Área medida: ${format(e.area)} m²`),
+        '',`Minha escolha: ${chosenExp ? `${format(chosenExp.x)} × ${format(chosenExp.y)} m` : 'Não registrada'}`,
+        `Meu argumento: ${state.argument || 'Não registrado'}`,
+        `Revisão da hipótese: ${state.reflection || 'Não registrada'}`,
+        '', 'MINHAS RESPOSTAS — FORMALIZAÇÃO',
+        ...state.formalAnswers.map((answer,i) => `${i+1}. ${answer || 'Não respondida'}`),
+        '', `Minha síntese final: ${state.exit || 'Não registrada'}`,
+        '', 'Conteúdo produzido localmente no jogo Missão Horta. Não enviado a servidores.'
+      ];
+      const blob = new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='meu-registro-missao-horta.txt'; document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      toast('Registro preparado para baixar.');
+    });
+    $('#resetBtn').addEventListener('click', () => {
+      if (!confirm('Reiniciar este aparelho? As hipóteses e os experimentos salvos serão apagados.')) return;
+      state=fresh(); x=3; $('#pairName').value=''; x=3; measured=false; areaGuess=null; guessFeedbackMessage=''; $('#areaGuessInput').value=''; $('#areaGuessInput').removeAttribute('aria-invalid'); persist();
+      $$('input[name="hyp"]').forEach(el=>el.checked=false);
+      $('#argumentInput').value=''; $('#exitInput').value='';
+      show('intro'); toast('Nova investigação iniciada.');
+    });
+    let resume = state.screen;
+    if (!screens.includes(resume) || screens.indexOf(resume)>state.stage) resume=screens[state.stage];
+    // Recover saved progress even when local storage is unavailable.
+    renderLab(); show(resume);
+  })();
+  </script>
+</body>
+</html>
